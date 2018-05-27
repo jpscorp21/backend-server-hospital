@@ -12,7 +12,15 @@ const Usuario = require("../models/usuario");
 // Obtener todos los usuarios
 // ===================================
 app.get("/", (req, res, next) => {
-  Usuario.find({}, "nombre email img role").exec((err, usuarios) => {
+
+  let desde = req.query.desde || 0;
+  desde = Number(desde);
+  
+
+  Usuario.find({}, "nombre email img role")
+  .skip(desde)
+  .limit(5) // TRAE LOS PRIMEROS 5
+  .exec((err, usuarios) => {
     if (err) {
       return res.status(500).json({
         ok: false,
@@ -21,10 +29,13 @@ app.get("/", (req, res, next) => {
       });
     }
 
-    res.status(200).json({
-      ok: true,
-      usuarios
-    });
+    Usuario.count({}, (err, conteo) => {
+      res.status(200).json({
+        ok: true,
+        usuarios,
+        total: conteo
+      });
+    })
   });
 });
 
